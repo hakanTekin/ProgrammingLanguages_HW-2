@@ -1,0 +1,21 @@
+ADD 1
+hakanone
+END
+ADD 2
+hakantwo
+END
+ADD 3
+hakanthree
+END
+ADD 4
+hakanfour
+END
+ADD 5
+hakanfive
+END
+ADD 6
+hakansix
+END
+TAG yarak 1 2 -1
+TAG yarak 3 4 -1
+
