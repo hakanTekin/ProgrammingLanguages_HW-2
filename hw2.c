@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
         strcpy(bufferCopy, buffer);
         if (strcmp(buffer, EXIT_WORD) == 0)
             break; //END entered, exit the loop
-            
+
         token = strtok(bufferCopy, " ");
 
         if (strcmp(token, ADD_COMMAND) == 0)
@@ -327,10 +327,6 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
 
         if (curWord[0] == ')')
         { //If ) is found. this means the method is done, return to caller.
-            // for (int i = 0; i < indexesSize; i++)
-            // {
-            //     resultArray[(*resultArraySize)++] = indexes[i];
-            // }
             linePtr = f;
             return linePtr;
         }
@@ -353,7 +349,6 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
             else
             {
                 //This means there is a result array, the new results should be compared with the main result. If both arrays dont have something, result should remove that id
-
                 for (size_t i = 0; i < *resultArraySize; i++)
                 {
                     int isThere = 0;
@@ -449,6 +444,7 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
 
 int or_helper(char *linePtr, int *resultArray, int *resultArraySize)
 {
+
 }
 int not_helper(char *linePtr, int *resultArray, int *resultArraySize)
 {
@@ -476,6 +472,68 @@ void fix_array(int *dst, int *dstLength)
 
 //dst is the main result array, src is the temp results.
 int and_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcLength, int iter)
+{
+
+    if (iter == 0)
+    {
+        int x = *dstLength;
+        for (int i = 0; i < srcLength; i++)
+        {
+            dst[x++] = src[i];
+        }
+        *dstLength = x;
+    }
+    else
+    {
+        int x = *dstLength;
+        for (int i = 0; i < *dstLength; i++)
+        {
+            int isThere = 0;
+            for (int j = 0; j < srcLength; j++)
+            {
+                if (dst[i] == src[j])
+                    isThere = 1;
+            }
+            if (isThere == 0)
+                dst[i] = -1;
+        }
+        *dstLength = x;
+    } //Result should be ready. Just remove -1's and shift the damn array
+    fix_array(dst, dstLength);
+}
+
+int or_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcLength, int iter)
+{
+
+    if (iter == 0)
+    {
+        int x = *dstLength;
+        for (int i = 0; i < srcLength; i++)
+        {
+            dst[x++] = src[i];
+        }
+        *dstLength = x;
+    }
+    else
+    {
+        int x = *dstLength;
+        for (int i = 0; i < *dstLength; i++)
+        {
+            int isThere = 0;
+            for (int j = 0; j < srcLength; j++)
+            {
+                if (dst[i] == src[j])
+                    isThere = 1;
+            }
+            if (isThere == 0)
+                dst[i] = -1;
+        }
+        *dstLength = x;
+    } //Result should be ready. Just remove -1's and shift the damn array
+    fix_array(dst, dstLength);
+}
+
+int not_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcLength, int iter)
 {
 
     if (iter == 0)
