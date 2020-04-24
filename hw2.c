@@ -23,8 +23,11 @@
 
 #define FIND_COMMAND "FIND"
 #define AND_COMMAND "AND"
+#define AND_COMMAND_PARANTHESES "AND("
 #define OR_COMMAND "OR"
+#define OR_COMMAND_PARANTHESES "OR("
 #define NOT_COMMAND "NOT"
+#define NOT_COMMAND_PARANTHESES "NOT("
 
 #define DEFAULT_ARRAY_SIZE 1000
 
@@ -49,6 +52,12 @@ struct note_struct
     int id;
     char note_lines[MAX_LINE_LENGHT][MAX_LINE_LENGHT];
     int note_line_count;
+};
+
+struct morse_struct
+{
+    char *morse;
+    char letter;
 };
 
 int add(char *linePtr);
@@ -78,7 +87,7 @@ int main(int argc, char *argv[])
     f = fopen("input.txt", "r+");
     int a[9999];
     printf("%d\n", sizeof(a) / sizeof(int));
-    char buffer[DEFAULT_ARRAY_SIZE];
+    char *buffer = malloc(sizeof(char) * DEFAULT_ARRAY_SIZE);
     char bufferCopy[DEFAULT_ARRAY_SIZE];
     char *token = NULL;
 
@@ -111,7 +120,7 @@ int main(int argc, char *argv[])
                 indexes[indexesCount++] = strtol(token, &temp, 10);
                 printf("%d should be a id to be tagged with %s\n", indexes[indexesCount - 1], tagName);
                 token = strtok(NULL, " ");
-                if (token[strlen(token) - 1] == '\n')
+                if (token != NULL && token[strlen(token) - 1] == '\n')
                     token[strlen(token) - 1] = '\0';
             }
             int res = 0;
@@ -218,7 +227,7 @@ int display(int id)
         {
         }
     }
-    printf("Cannot find note with ID : %d", id);
+    printf("Cannot find note with ID : %d\n", id);
 }
 
 /*
@@ -242,39 +251,38 @@ int find(char *linePtr, int *finalArray)
     int *resultArray = malloc(sizeof(int) * DEFAULT_ARRAY_SIZE);
     int resultArraySize = 0;
 
-    char buffer[DEFAULT_ARRAY_SIZE];
     char bufferCopy[DEFAULT_ARRAY_SIZE];
 
     while (linePtr[0] == ' ')
         linePtr++;
 
-    char *indexStart = 0;
-    char *indexEnd = 0;
-
-    if (fgets(buffer, DEFAULT_ARRAY_SIZE, f))
+    if (linePtr != NULL && linePtr != ')')
     {
 
         int *indexes = malloc(sizeof(int) * DEFAULT_ARRAY_SIZE);
         int indexesSize = 0;
-        strcpy(bufferCopy, buffer);
+        strcpy(bufferCopy, linePtr);
+
+        char *indexStart = &bufferCopy[0];
+        char *indexEnd = &bufferCopy[0];
 
         indexEnd = strstr(indexStart, " ");
-        char methodName[3];
+        char methodName[4];
         strncpy(methodName, indexStart, indexEnd - indexStart - 1);
         indexStart = indexEnd;
         if (methodName == NULL)
             printf("TOKEN EMPTY ON FIND method\n");
-        else if (strcmp(methodName, AND_COMMAND) == 0)
+        else if (strcmp(methodName, AND_COMMAND) == 0 || strcmp(methodName, AND_COMMAND_PARANTHESES) == 0)
         {
             and_helper(indexStart, indexes, &indexesSize);
             insert_new_indexes_to_result(resultArray, indexes, &resultArraySize, indexesSize);
         }
-        else if (strcmp(methodName, OR_COMMAND) == 0)
+        else if (strcmp(methodName, OR_COMMAND) == 0 || strcmp(methodName, OR_COMMAND_PARANTHESES) == 0)
         {
             or_helper(indexStart, indexes, &indexesSize);
             insert_new_indexes_to_result(resultArray, indexes, &resultArraySize, indexesSize);
         }
-        else if (strcmp(methodName, NOT_COMMAND) == 0)
+        else if (strcmp(methodName, NOT_COMMAND) == 0 || strcmp(methodName, NOT_COMMAND_PARANTHESES) == 0)
         {
             not_helper(indexStart, indexes, &indexesSize);
             insert_new_indexes_to_result(resultArray, indexes, &resultArraySize, indexesSize);
@@ -284,44 +292,89 @@ int find(char *linePtr, int *finalArray)
             printf("DUNNO MAN THIS COMMAND LOOKS BS. FIND RECIEVED UNKNOWN COMMAND\n");
         }
     }
+    printf("FIND METHOD RESULTING INDEXES\n");
+    for (int i = 0; i < resultArraySize; i++)
+    {
+        printf("%d\t", resultArray[i]);
+    }
+    printf("\n");
 }
+
 int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
 {
 
-    int indexes[DEFAULT_ARRAY_SIZE];
+    int *indexes = malloc(sizeof(int) * DEFAULT_ARRAY_SIZE);
     int indexesSize = 0;
 
     while (linePtr[0] == ' ')
         linePtr++;
-    char *s = 0;
-    char *f = 0;
+    char *s = linePtr;
+    char *f = linePtr;
 
     int currentIteration = 0; //iteration handles first search problem. you cannot apply 'and' operation with only one side of an equation
     while (1)
     {
-        s = f + 1;
-        f = strstr(s, " ");
+        s = f;
+        f = strstr(s + 1, " ");
+        if (f == NULL)
+            f = &s[strlen(s) - 1];
+        while (s[0] == ' ')
+            s++;
         char curWord[50];
-        strncpy(curWord, linePtr, f - s);
+        strncpy(curWord, s, f - s);
+        curWord[f - s] = '\0';
 
-        if (strcmp(curWord, ")") == 0)
+        if (curWord[0] == ')')
         { //If ) is found. this means the method is done, return to caller.
+            for (int i = 0; i < indexesSize; i++)
+            {
+                resultArray[(*resultArraySize)++] = indexes[i];
+            }
+            linePtr = f;
+            return linePtr;
+        }
 
-            return 117;
-        }
-        else if (strcmp(curWord, AND_COMMAND))
+        else if (strcmp(curWord, AND_COMMAND) == 0 || strcmp(curWord, AND_COMMAND_PARANTHESES) == 0)
         {
-            and_helper(s, indexes, &indexesSize);
+            and_helper(f, indexes, &indexesSize);
+
+            while (f[0] != ')')
+                f++;
+            f += 2;
+
+            if (currentIteration == 0)
+            {
+                insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize);
+                for (size_t i = 0; i < indexesSize; i++)
+                    indexes[i] = -1;
+                indexesSize = 0;
+                /* code */
+            }
+            else
+            {
+                //This means there is a result array, the new results should be compared with the main result. If both arrays dont have something, result should remove that id
+
+                for (size_t i = 0; i < *resultArraySize; i++)
+                {
+                    int isThere = 0;
+                    for (size_t j = 0; j < indexesSize; j++)
+                    {
+                        if (resultArray[i] == indexes[j])
+                            isThere = 1;
+                    }
+                    if (isThere == 0) //If not found, remove that item
+                        resultArray[i] = -1;
+                }
+            }
+        }
+        else if (strcmp(curWord, OR_COMMAND) == 0 || strcmp(curWord, OR_COMMAND_PARANTHESES) == 0)
+        {
+            or_helper(f, indexes, &indexesSize);
             insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize);
         }
-        else if (strcmp(curWord, OR_COMMAND))
+        else if (strcmp(curWord, NOT_COMMAND) == 0 || strcmp(curWord, NOT_COMMAND_PARANTHESES) == 0)
         {
-            or_helper(s, indexes, &indexesSize);
-            insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize);
-        }
-        else if (strcmp(curWord, NOT_COMMAND))
-        {
-            not_helper(s, indexes, &indexesSize);
+            not_helper(f, indexes, &indexesSize);
             insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize);
         }
         else
@@ -342,16 +395,22 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
             }
             else
             {
-                for(int i = 0; i<tags_legth; i++){
-                    if(strcmp(tags[i]->name, curWord) == 0){
-                        for(int j = 0; j<indexesSize; j++){
+                for (int j = 0; j < indexesSize; j++)
+                {
+                    for (int i = 0; i < tags_legth; i++)
+                    {
+                        if (strcmp(tags[i]->name, curWord) == 0)
+                        {
                             int isThere = 0;
-                            for(int k = 0; k<tags[i]->id_length; k++){
-                                if(tags[i]->id_array[k] == indexes[j]){
+                            for (int k = 0; k < tags[i]->id_length; k++)
+                            {
+                                if (tags[i]->id_array[k] == indexes[j])
+                                {
                                     isThere = 1;
                                 }
                             }
-                            if(isThere == 0){
+                            if (isThere == 0)
+                            {
                                 indexes[j] = -1;
                             }
                         }
@@ -361,43 +420,44 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
                 //At this point, indexes that are to be removed is marked by -1
                 int newIndexes[indexesSize];
                 int newIndexesCount = 0;
-                for(int i = 0; i<indexesSize; i++){
-                    if(indexes[i] != -1){
+                for (int i = 0; i < indexesSize; i++)
+                {
+                    if (indexes[i] != -1)
+                    {
                         newIndexes[newIndexesCount++] = indexes[i];
                     }
                 }
 
-                for(int i = 0; i<newIndexesCount; i++){
+                for (int i = 0; i < newIndexesCount; i++)
+                {
                     indexes[i] = newIndexes[i];
                 }
                 indexesSize = newIndexesCount;
-
             }
-            currentIteration++; //A word is processed, increase iteration
         }
+        currentIteration++; //A word is processed, increase iteration
     }
 
     for (int i = 0; i < indexesSize; i++)
     {
-        printf(">%d\n is one index found babyyy", indexes[i]);
+        printf(">%d\n is one index found babyyy\n", indexes[i]);
     }
 }
+
 int or_helper(char *linePtr, int *resultArray, int *resultArraySize)
 {
-    while (linePtr[0] == ' ')
-        linePtr++;
 }
 int not_helper(char *linePtr, int *resultArray, int *resultArraySize)
 {
-    while (linePtr[0] == ' ')
-        linePtr++;
 }
 
 //dst is the main result array, src is the temp results.
 int insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcLength)
 {
+    int x = *dstLength;
     for (int i = 0; i < srcLength; i++)
     {
-        dst[*dstLength++] = src[i];
+        dst[x++] = src[i];
     }
+    *dstLength = x;
 }

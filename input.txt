@@ -16,6 +16,31 @@ END
 ADD 6
 hakansix
 END
-TAG yarak 1 2 -1
-TAG yarak 3 4 -1
-
+ADD 7
+hakanone
+END
+ADD 8
+hakantwo
+END
+ADD 9
+hakanthree
+END
+ADD 10
+hakanfour
+END
+ADD 11
+hakanfive
+END
+ADD 12
+hakansix
+END
+xx
+TAG one 1 2 -1
+TAG two 1 2 3 4 -1
+TAG three 5 6 1 -1
+TAG four 2 3 1 -1
+TAG five 3 4 1 -1
+TAG six 5 6 -1
+xx
+FIND AND( AND( one three ) AND( two four ) )
+exit
