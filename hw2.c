@@ -31,7 +31,7 @@
 
 #define DEFAULT_ARRAY_SIZE 1000
 
-#define EXIT_WORD "exit"
+#define EXIT_WORD "exit\n"
 
 enum find_types
 {
@@ -70,7 +70,8 @@ int find(char *linePtr, int *indexes);
 int and_helper(char *linePtr, int *indexes, int *indexesSize);
 int or_helper(char *linePtr, int *indexes, int *indexesSize);
 int not_helper(char *linePtr, int *indexes, int *indexesSize);
-int insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcLength);
+int and_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcLength, int iter);
+void fix_array(int *dst, int *dstLength);
 
 //GLOBAL VARIABLES
 struct note_struct *notes[DEFAULT_ARRAY_SIZE];
@@ -96,6 +97,7 @@ int main(int argc, char *argv[])
         strcpy(bufferCopy, buffer);
         if (strcmp(buffer, EXIT_WORD) == 0)
             break; //END entered, exit the loop
+            
         token = strtok(bufferCopy, " ");
 
         if (strcmp(token, ADD_COMMAND) == 0)
@@ -275,17 +277,17 @@ int find(char *linePtr, int *finalArray)
         else if (strcmp(methodName, AND_COMMAND) == 0 || strcmp(methodName, AND_COMMAND_PARANTHESES) == 0)
         {
             and_helper(indexStart, indexes, &indexesSize);
-            insert_new_indexes_to_result(resultArray, indexes, &resultArraySize, indexesSize);
+            and_insert_new_indexes_to_result(resultArray, indexes, &resultArraySize, indexesSize, 0);
         }
         else if (strcmp(methodName, OR_COMMAND) == 0 || strcmp(methodName, OR_COMMAND_PARANTHESES) == 0)
         {
             or_helper(indexStart, indexes, &indexesSize);
-            insert_new_indexes_to_result(resultArray, indexes, &resultArraySize, indexesSize);
+            //insert_new_indexes_to_result(resultArray, indexes, &resultArraySize, indexesSize, 0);
         }
         else if (strcmp(methodName, NOT_COMMAND) == 0 || strcmp(methodName, NOT_COMMAND_PARANTHESES) == 0)
         {
             not_helper(indexStart, indexes, &indexesSize);
-            insert_new_indexes_to_result(resultArray, indexes, &resultArraySize, indexesSize);
+            //insert_new_indexes_to_result(resultArray, indexes, &resultArraySize, indexesSize, 0);
         }
         else
         {
@@ -302,7 +304,6 @@ int find(char *linePtr, int *finalArray)
 
 int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
 {
-
     int *indexes = malloc(sizeof(int) * DEFAULT_ARRAY_SIZE);
     int indexesSize = 0;
 
@@ -326,10 +327,10 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
 
         if (curWord[0] == ')')
         { //If ) is found. this means the method is done, return to caller.
-            for (int i = 0; i < indexesSize; i++)
-            {
-                resultArray[(*resultArraySize)++] = indexes[i];
-            }
+            // for (int i = 0; i < indexesSize; i++)
+            // {
+            //     resultArray[(*resultArraySize)++] = indexes[i];
+            // }
             linePtr = f;
             return linePtr;
         }
@@ -341,10 +342,9 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
             while (f[0] != ')')
                 f++;
             f += 2;
-
             if (currentIteration == 0)
             {
-                insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize);
+                and_insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration);
                 for (size_t i = 0; i < indexesSize; i++)
                     indexes[i] = -1;
                 indexesSize = 0;
@@ -365,17 +365,19 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
                     if (isThere == 0) //If not found, remove that item
                         resultArray[i] = -1;
                 }
+
+                fix_array(resultArray, resultArraySize);
             }
         }
         else if (strcmp(curWord, OR_COMMAND) == 0 || strcmp(curWord, OR_COMMAND_PARANTHESES) == 0)
         {
             or_helper(f, indexes, &indexesSize);
-            insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize);
+            //insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration);
         }
         else if (strcmp(curWord, NOT_COMMAND) == 0 || strcmp(curWord, NOT_COMMAND_PARANTHESES) == 0)
         {
             not_helper(f, indexes, &indexesSize);
-            insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize);
+            //insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration);
         }
         else
         { //else means there is a TAG name specified (e.g. 'todo')
@@ -434,6 +436,7 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
                 }
                 indexesSize = newIndexesCount;
             }
+            and_insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration);
         }
         currentIteration++; //A word is processed, increase iteration
     }
@@ -451,13 +454,54 @@ int not_helper(char *linePtr, int *resultArray, int *resultArraySize)
 {
 }
 
-//dst is the main result array, src is the temp results.
-int insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcLength)
+void fix_array(int *dst, int *dstLength)
 {
-    int x = *dstLength;
-    for (int i = 0; i < srcLength; i++)
+    for (int i = 1; i < *dstLength; i++)
     {
-        dst[x++] = src[i];
+        if (dst[i] != -1)
+            while (dst[i - 1] == -1 && i >= 0 && i < *dstLength)
+            {
+                dst[i - 1] = dst[i];
+                dst[i] = -1;
+                i--;
+            }
     }
-    *dstLength = x;
+    for (int i = 0; i < *dstLength; i++)
+        if (dst[i] == -1)
+        {
+            *dstLength = i;
+            break;
+        }
+}
+
+//dst is the main result array, src is the temp results.
+int and_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcLength, int iter)
+{
+
+    if (iter == 0)
+    {
+        int x = *dstLength;
+        for (int i = 0; i < srcLength; i++)
+        {
+            dst[x++] = src[i];
+        }
+        *dstLength = x;
+    }
+    else
+    {
+        int x = *dstLength;
+        for (int i = 0; i < *dstLength; i++)
+        {
+            int isThere = 0;
+            for (int j = 0; j < srcLength; j++)
+            {
+                if (dst[i] == src[j])
+                    isThere = 1;
+            }
+            if (isThere == 0)
+                dst[i] = -1;
+        }
+        *dstLength = x;
+    } //Result should be ready. Just remove -1's and shift the damn array
+    fix_array(dst, dstLength);
 }
