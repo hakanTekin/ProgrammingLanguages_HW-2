@@ -1,51 +1,43 @@
-ADD 1
-hakanone
-END
-ADD 2
-hakantwo
-END
 ADD 3
-hakanthree
+Things todo for the 326 Hw !
+ * review dynamic memory allocation
+ * define the structs
 END
-ADD 4
-hakanfour
-END
-ADD 5
-hakanfive
-END
-ADD 6
-hakansix
-END
-ADD 7
-hakanone
-END
-ADD 8
-hakantwo
-END
-ADD 9
-hakanthree
-END
+TAG work 3 -1
+TAG todo 3 -1
 ADD 10
-hakanfour
+Don't you know about the bird?
+Everybody's heard about the bird.
 END
-ADD 11
-hakanfive
+TAG fun 10 -1
+ADD 20
+*** Play with Lola & Luka ***
+          :)
 END
-ADD 12
-hakansix
+TAG todo 20 -1
+TAG urgent 3 -1
+FIND AND( work )
+DISPLAY 3
+FIND AND( NOT( work ) fun )
+ADD 40
+Problems with pointers
+----------------------
+1. dangling pointers
+2. memory leaks 
 END
-xx
-TAG not_one 1 2 3 -1
-TAG not_two 4 5 6 -1
-TAG not_three 7 8 9 -1
-TAG not_four 10 11 12 -1
-xx
-FIND AND( AND( one three ) AND( two four ) )
-FIND OR( one AND( three five ) six )
-FIND NOT( not_one NOT( not_two not_three NOT( not_three ) ) )
-exit
-
-
-
-upto four ) it is correct
-368
+TAG pointer 40 -1
+TAG 426 40 -1
+TAG work 40 -1
+TAG new 20 40 -1
+FIND NOT( OR( todo urgent ) )
+ADD 50
+Flight details: ESB-TXL
+END
+TAG flight 50 -1
+TAG work 50 -1
+ADD 60
+Vacation: Azores 
+* Flight: ESB-LIS
+END
+TAG flight 60 -1
+FIND AND( flight NOT( work ) )

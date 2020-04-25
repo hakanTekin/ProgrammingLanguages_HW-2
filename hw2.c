@@ -123,10 +123,8 @@ int main(int argc, char *argv[])
             while (token != NULL && strcmp(token, "-1") != 0)
             {
                 char *temp;
-                printf("TAG name is : %s\n", tagName);
                 //Not using atoi() since it is considered dangerous
                 indexes[indexesCount++] = strtol(token, &temp, 10);
-                printf("%d should be a id to be tagged with %s\n", indexes[indexesCount - 1], tagName);
                 token = strtok(NULL, " ");
                 if (token != NULL && token[strlen(token) - 1] == '\n')
                     token[strlen(token) - 1] = '\0';
@@ -139,7 +137,6 @@ int main(int argc, char *argv[])
         }
         else if (strcmp(token, FIND_COMMAND) == 0)
         {
-            printf("HEHHE WEEEE\n");
             int *results = malloc(sizeof(DEFAULT_ARRAY_SIZE) / sizeof(int));
             char *s = strstr(buffer, " ") + 1;
             int res = find(s, results);
@@ -179,7 +176,7 @@ int add(char *linePtr)
             buffer[strlen(buffer) - 1] = '\0';
         if (strcmp(buffer, ADD_TERMINATE_WORD) == 0)
             break; //This loop is done
-        printf("->%s<-\n", buffer);
+
         strcpy(note->note_lines[note->note_line_count++], buffer);
     }
     notes[notes_length++] = note;
@@ -201,7 +198,6 @@ int tag(char *tagName, int *indexesToAdd, int indexesCount, struct tag_struct *t
             tags[tagIndexIfExists]->id_array[tags[tagIndexIfExists]->id_length] = indexesToAdd[i];
             tags[tagIndexIfExists]->id_length++;
         }
-        printf("WELL. TAG SHOULD BE RECIEVED SOME NEW THINGYS\n");
     }
     else if (tagIndexIfExists == -1)
     {
@@ -214,7 +210,6 @@ int tag(char *tagName, int *indexesToAdd, int indexesCount, struct tag_struct *t
             temp->id_length++;
         }
         tags[tags_legth++] = temp;
-        printf("WELL. A NEW TAG SHOULD BE ADDED\n");
     }
 }
 
@@ -225,11 +220,12 @@ int display(int id)
         struct note_struct *n = notes[i];
         if (n->id != NULL && n->id == id)
         {
-            printf("Displaying note with ID : %d\n", n->id);
+            printf("Id: %d\n", id);
             for (int j = 0; j < n->note_line_count; j++)
             {
                 printf("\t>%s\n", n->note_lines[j]);
             }
+            return 117;
         }
         else
         {
@@ -371,8 +367,12 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
         while (s[0] == ' ')
             s++;
         char curWord[50];
-        strncpy(curWord, s, f - s);
-        curWord[f - s] = '\0';
+        if(s == f){
+            curWord[0] = ')';
+        }else{
+            strncpy(curWord, s, f - s);
+            curWord[f - s] = '\0';
+        }
 
         if (curWord[0] == ')')
         { //If ) is found. this means the method is done, return to caller.
