@@ -73,6 +73,9 @@ int not_helper(char *linePtr, int *indexes, int *indexesSize);
 int and_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcLength, int iter);
 int or_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcLength, int iter);
 int not_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcLength, int iter);
+int sort_ascending_order(int *r, int *rs);
+
+int reverse_array_for_not_ending(int *r, int *rs);
 
 void fix_array(int *dst, int *dstLength);
 
@@ -298,12 +301,54 @@ int find(char *linePtr, int *finalArray)
             printf("DUNNO MAN THIS COMMAND LOOKS BS. FIND RECIEVED UNKNOWN COMMAND\n");
         }
     }
-    printf("FIND METHOD RESULTING INDEXES\n");
-    for (int i = 0; i < resultArraySize; i++)
+    print_result_array(resultArray, &resultArraySize);
+}
+
+int sort_ascending_order(int *r, int *rs)
+{
+    int x[9999];
+    int xs = *rs;
+
+    for (size_t i = 0; i < xs; i++)
     {
-        printf("%d\t", resultArray[i]);
+        x[i] = r[i];
     }
-    printf("\n");
+
+    for (size_t i = 0; i < xs; i++)
+    {
+        for (size_t j = 0; j < xs; j++)
+        {
+            if(x[i] < x[j]){
+                int temp = x[i];
+                x[i] = x[j];
+                x[j] = temp;
+            }
+        }
+    }
+
+    for (size_t i = 0; i < xs; i++)
+    {
+        r[i] = x[i];
+    }
+    *rs = xs;
+    return -117;
+}
+
+int print_result_array(int *r, int *rs)
+{
+    sort_ascending_order(r, rs);
+    printf("Results:\n");
+    for (int i = 0; i < *rs; i++)
+    {
+        for (int j = 0; j < notes_length; j++)
+        {
+            if (r[i] == notes[j]->id)
+            {
+                printf("Id: %d %s\n", notes[j]->id, notes[j]->note_lines[0]);
+            }
+        }
+    }
+    return -117;
 }
 
 int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
@@ -607,10 +652,11 @@ int or_helper(char *linePtr, int *resultArray, int *resultArraySize)
                             int isThere = 0;
                             for (int k = 0; k < indexesSize; k++)
                             {
-                                if(tags[i]->id_array[j] == indexes[k])
+                                if (tags[i]->id_array[j] == indexes[k])
                                     isThere = 1;
                             }
-                            if(isThere == 0){
+                            if (isThere == 0)
+                            {
                                 indexes[indexesSize++] = tags[i]->id_array[j];
                             }
                         }
@@ -647,6 +693,144 @@ int or_helper(char *linePtr, int *resultArray, int *resultArraySize)
 
 int not_helper(char *linePtr, int *resultArray, int *resultArraySize)
 {
+    int *indexes = malloc(sizeof(int) * DEFAULT_ARRAY_SIZE);
+    int indexesSize = 0;
+
+    while (linePtr[0] == ' ')
+        linePtr++;
+    char *s = linePtr;
+    char *f = linePtr;
+
+    int currentIteration = 0; //iteration handles first search problem. you cannot apply 'and' operation with only one side of an equation
+    while (1)
+    {
+        s = f;
+        f = strstr(s + 1, " ");
+        if (f == NULL)
+            f = &s[strlen(s) - 1];
+        while (s[0] == ' ')
+            s++;
+        char curWord[50];
+        strncpy(curWord, s, f - s);
+        curWord[f - s] = '\0';
+
+        if (curWord[0] == ')')
+        { //If ) is found. this means the method is done, return to caller.
+            reverse_array_for_not_ending(resultArray, resultArraySize);
+            linePtr = f;
+            return linePtr;
+        }
+
+        else if (strcmp(curWord, AND_COMMAND) == 0 || strcmp(curWord, AND_COMMAND_PARANTHESES) == 0)
+        {
+            and_helper(f, indexes, &indexesSize);
+
+            while (f[0] != ')')
+                f++;
+            f += 2;
+
+            not_insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration);
+            for (size_t i = 0; i < indexesSize; i++)
+                indexes[i] = -1;
+            indexesSize = 0;
+            fix_array(resultArray, resultArraySize);
+        }
+        else if (strcmp(curWord, OR_COMMAND) == 0 || strcmp(curWord, OR_COMMAND_PARANTHESES) == 0)
+        {
+            or_helper(f, indexes, &indexesSize);
+            //insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration)
+
+            while (f[0] != ')')
+                f++;
+            f += 2;
+
+            not_insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration);
+            for (size_t i = 0; i < indexesSize; i++)
+                indexes[i] = -1;
+            indexesSize = 0;
+            fix_array(resultArray, resultArraySize);
+        }
+        else if (strcmp(curWord, NOT_COMMAND) == 0 || strcmp(curWord, NOT_COMMAND_PARANTHESES) == 0)
+        {
+            not_helper(f, indexes, &indexesSize);
+
+            while (f[0] != ')')
+                f++;
+            f += 2;
+
+            not_insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration);
+            for (size_t i = 0; i < indexesSize; i++)
+                indexes[i] = -1;
+            indexesSize = 0;
+            fix_array(resultArray, resultArraySize);
+        }
+        else
+        { //else means there is a TAG name specified (e.g. 'todo')
+
+            if (currentIteration == 0)
+            {
+                for (int i = 0; i < tags_legth; i++)
+                {
+                    if (strcmp(tags[i]->name, curWord) == 0)
+                    { //There is a tag with that name, add the contents to result
+                        for (int j = 0; j < tags[i]->id_length; j++)
+                        {
+                            indexes[indexesSize++] = tags[i]->id_array[j];
+                        }
+                    }
+                }
+            }
+            else
+            {
+                //Find the searched tag,
+                //add each item to the indexes array if it is not in the damn array
+
+                for (int i = 0; i < tags_legth; i++)
+                {
+                    if (strcmp(tags[i]->name, curWord) == 0)
+                    {
+                        for (int j = 0; j < tags[i]->id_length; j++)
+                        {
+                            int isThere = 0;
+                            for (int k = 0; k < indexesSize; k++)
+                            {
+                                if (tags[i]->id_array[j] == indexes[k])
+                                    isThere = 1;
+                            }
+                            if (isThere == 0)
+                            {
+                                indexes[indexesSize++] = tags[i]->id_array[j];
+                            }
+                        }
+                    }
+                }
+
+                //At this point, indexes that are to be removed is marked by -1
+                int newIndexes[indexesSize];
+                int newIndexesCount = 0;
+                for (int i = 0; i < indexesSize; i++)
+                {
+                    if (indexes[i] != -1)
+                    {
+                        newIndexes[newIndexesCount++] = indexes[i];
+                    }
+                }
+
+                for (int i = 0; i < newIndexesCount; i++)
+                {
+                    indexes[i] = newIndexes[i];
+                }
+                indexesSize = newIndexesCount;
+            }
+            not_insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration);
+        }
+        currentIteration++; //A word is processed, increase iteration
+    }
+
+    for (int i = 0; i < indexesSize; i++)
+    {
+        printf(">%d\n is one index found babyyy\n", indexes[i]);
+    }
 }
 
 void fix_array(int *dst, int *dstLength)
@@ -734,7 +918,6 @@ int or_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcL
 
 int not_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcLength, int iter)
 {
-
     if (iter == 0)
     {
         int x = *dstLength;
@@ -747,18 +930,44 @@ int not_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int src
     else
     {
         int x = *dstLength;
-        for (int i = 0; i < *dstLength; i++)
+        for (int j = 0; j < srcLength; j++)
         {
             int isThere = 0;
-            for (int j = 0; j < srcLength; j++)
+            for (int i = 0; i < *dstLength; i++)
             {
                 if (dst[i] == src[j])
                     isThere = 1;
             }
             if (isThere == 0)
-                dst[i] = -1;
+                dst[x++] = src[j];
         }
         *dstLength = x;
     } //Result should be ready. Just remove -1's and shift the damn array
     fix_array(dst, dstLength);
+}
+
+int reverse_array_for_not_ending(int *r, int *rs)
+{
+    int *n[DEFAULT_ARRAY_SIZE] = {NULL};
+    int ns = 0;
+    for (int i = 0; i < tags_legth; i++)
+    {
+        for (int j = 0; j < tags[i]->id_length; j++)
+        {
+            int isThere = 0;
+            for (int k = 0; k < *rs; k++)
+            {
+                if (tags[i]->id_array[j] == r[k])
+                    isThere = 1;
+            }
+            if (isThere == 0)
+            {
+                n[ns++] = tags[i]->id_array[j];
+            }
+        }
+    }
+
+    for (int i = 0; i < ns; i++)
+        r[i] = n[i];
+    *rs = ns;
 }

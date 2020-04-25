@@ -35,15 +35,14 @@ ADD 12
 hakansix
 END
 xx
-TAG one 1 2 3 4 5 117 6 -1
-TAG two 1 2 3 4 117 -1
-TAG three 5 6 7 112 -1
-TAG four 1 2 3 -1
-TAG five 5 6 7 112 321 -1
-TAG six 5 6 9999 -1
+TAG not_one 1 2 3 -1
+TAG not_two 4 5 6 -1
+TAG not_three 7 8 9 -1
+TAG not_four 10 11 12 -1
 xx
 FIND AND( AND( one three ) AND( two four ) )
 FIND OR( one AND( three five ) six )
+FIND NOT( not_one NOT( not_two not_three NOT( not_three ) ) )
 exit
 
 
