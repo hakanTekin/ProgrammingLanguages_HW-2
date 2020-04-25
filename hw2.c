@@ -348,7 +348,6 @@ int print_result_array(int *r, int *rs)
     return -117;
 }
 
-
 int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
 {
     int *indexes = malloc(sizeof(int) * DEFAULT_ARRAY_SIZE);
@@ -550,8 +549,15 @@ int or_helper(char *linePtr, int *resultArray, int *resultArraySize)
         while (s[0] == ' ')
             s++;
         char curWord[50];
-        strncpy(curWord, s, f - s);
-        curWord[f - s] = '\0';
+        if (s == f)
+        {
+            curWord[0] = ')';
+        }
+        else
+        {
+            strncpy(curWord, s, f - s);
+            curWord[f - s] = '\0';
+        }
 
         if (curWord[0] == ')')
         { //If ) is found. this means the method is done, return to caller.
@@ -692,8 +698,15 @@ int not_helper(char *linePtr, int *resultArray, int *resultArraySize)
         while (s[0] == ' ')
             s++;
         char curWord[50];
-        strncpy(curWord, s, f - s);
-        curWord[f - s] = '\0';
+        if (s == f)
+        {
+            curWord[0] = ')';
+        }
+        else
+        {
+            strncpy(curWord, s, f - s);
+            curWord[f - s] = '\0';
+        }
 
         if (curWord[0] == ')')
         { //If ) is found. this means the method is done, return to caller.
