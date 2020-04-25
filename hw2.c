@@ -74,6 +74,7 @@ int and_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int src
 int or_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcLength, int iter);
 int not_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcLength, int iter);
 int sort_ascending_order(int *r, int *rs);
+int print_result_array(int *r, int *rs);
 
 int reverse_array_for_not_ending(int *r, int *rs);
 
@@ -92,8 +93,6 @@ FILE *f = NULL;
 int main(int argc, char *argv[])
 {
     f = fopen("input.txt", "r+");
-    int a[9999];
-    printf("%d\n", sizeof(a) / sizeof(int));
     char *buffer = malloc(sizeof(char) * DEFAULT_ARRAY_SIZE);
     char bufferCopy[DEFAULT_ARRAY_SIZE];
     char *token = NULL;
@@ -193,7 +192,7 @@ int tag(char *tagName, int *indexesToAdd, int indexesCount, struct tag_struct *t
 
     if (tagIndexIfExists != -1 && tagIndexIfExists > -1)
     {
-        for (int i = 0; i < sizeof(indexesToAdd) / sizeof(int); i++)
+        for (int i = 0; i < indexesCount; i++)
         {
             tags[tagIndexIfExists]->id_array[tags[tagIndexIfExists]->id_length] = indexesToAdd[i];
             tags[tagIndexIfExists]->id_length++;
@@ -218,12 +217,12 @@ int display(int id)
     for (int i = 0; i < notes_length; i++)
     {
         struct note_struct *n = notes[i];
-        if (n->id != NULL && n->id == id)
+        if (n->id == id)
         {
             printf("Id: %d\n", id);
             for (int j = 0; j < n->note_line_count; j++)
             {
-                printf("\t>%s\n", n->note_lines[j]);
+                printf("%s\n", n->note_lines[j]);
             }
             return 117;
         }
@@ -260,7 +259,7 @@ int find(char *linePtr, int *finalArray)
     while (linePtr[0] == ' ')
         linePtr++;
 
-    if (linePtr != NULL && linePtr != ')')
+    if (linePtr != NULL && linePtr[0] != ')')
     {
 
         int *indexes = malloc(sizeof(int) * DEFAULT_ARRAY_SIZE);
@@ -298,6 +297,7 @@ int find(char *linePtr, int *finalArray)
         }
     }
     print_result_array(resultArray, &resultArraySize);
+    return 117;
 }
 
 int sort_ascending_order(int *r, int *rs)
@@ -314,7 +314,8 @@ int sort_ascending_order(int *r, int *rs)
     {
         for (size_t j = 0; j < xs; j++)
         {
-            if(x[i] < x[j]){
+            if (x[i] < x[j])
+            {
                 int temp = x[i];
                 x[i] = x[j];
                 x[j] = temp;
@@ -347,6 +348,7 @@ int print_result_array(int *r, int *rs)
     return -117;
 }
 
+
 int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
 {
     int *indexes = malloc(sizeof(int) * DEFAULT_ARRAY_SIZE);
@@ -360,6 +362,8 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
     int currentIteration = 0; //iteration handles first search problem. you cannot apply 'and' operation with only one side of an equation
     while (1)
     {
+        indexesSize = 0;
+        
         s = f;
         f = strstr(s + 1, " ");
         if (f == NULL)
@@ -367,9 +371,12 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
         while (s[0] == ' ')
             s++;
         char curWord[50];
-        if(s == f){
+        if (s == f)
+        {
             curWord[0] = ')';
-        }else{
+        }
+        else
+        {
             strncpy(curWord, s, f - s);
             curWord[f - s] = '\0';
         }
@@ -377,7 +384,7 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
         if (curWord[0] == ')')
         { //If ) is found. this means the method is done, return to caller.
             linePtr = f;
-            return linePtr;
+            return 117;
         }
 
         else if (strcmp(curWord, AND_COMMAND) == 0 || strcmp(curWord, AND_COMMAND_PARANTHESES) == 0)
@@ -500,44 +507,16 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
             }
             else
             {
-                for (int j = 0; j < indexesSize; j++)
+                for (size_t i = 0; i < tags_legth; i++)
                 {
-                    for (int i = 0; i < tags_legth; i++)
+                    if (strcmp(tags[i]->name, curWord) == 0)
                     {
-                        if (strcmp(tags[i]->name, curWord) == 0)
+                        for (size_t j = 0; j < tags[i]->id_length; j++)
                         {
-                            int isThere = 0;
-                            for (int k = 0; k < tags[i]->id_length; k++)
-                            {
-                                if (tags[i]->id_array[k] == indexes[j])
-                                {
-                                    isThere = 1;
-                                }
-                            }
-                            if (isThere == 0)
-                            {
-                                indexes[j] = -1;
-                            }
+                            indexes[indexesSize++] = tags[i]->id_array[j];
                         }
                     }
                 }
-
-                //At this point, indexes that are to be removed is marked by -1
-                int newIndexes[indexesSize];
-                int newIndexesCount = 0;
-                for (int i = 0; i < indexesSize; i++)
-                {
-                    if (indexes[i] != -1)
-                    {
-                        newIndexes[newIndexesCount++] = indexes[i];
-                    }
-                }
-
-                for (int i = 0; i < newIndexesCount; i++)
-                {
-                    indexes[i] = newIndexes[i];
-                }
-                indexesSize = newIndexesCount;
             }
             and_insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration);
         }
@@ -563,6 +542,7 @@ int or_helper(char *linePtr, int *resultArray, int *resultArraySize)
     int currentIteration = 0; //iteration handles first search problem. you cannot apply 'and' operation with only one side of an equation
     while (1)
     {
+        indexesSize = 0;
         s = f;
         f = strstr(s + 1, " ");
         if (f == NULL)
@@ -576,7 +556,7 @@ int or_helper(char *linePtr, int *resultArray, int *resultArraySize)
         if (curWord[0] == ')')
         { //If ) is found. this means the method is done, return to caller.
             linePtr = f;
-            return linePtr;
+            return 117;
         }
 
         else if (strcmp(curWord, AND_COMMAND) == 0 || strcmp(curWord, AND_COMMAND_PARANTHESES) == 0)
@@ -704,6 +684,7 @@ int not_helper(char *linePtr, int *resultArray, int *resultArraySize)
     int currentIteration = 0; //iteration handles first search problem. you cannot apply 'and' operation with only one side of an equation
     while (1)
     {
+        indexesSize = 0;
         s = f;
         f = strstr(s + 1, " ");
         if (f == NULL)
@@ -718,7 +699,7 @@ int not_helper(char *linePtr, int *resultArray, int *resultArraySize)
         { //If ) is found. this means the method is done, return to caller.
             reverse_array_for_not_ending(resultArray, resultArraySize);
             linePtr = f;
-            return linePtr;
+            return 117;
         }
 
         else if (strcmp(curWord, AND_COMMAND) == 0 || strcmp(curWord, AND_COMMAND_PARANTHESES) == 0)
@@ -946,9 +927,12 @@ int not_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int src
     fix_array(dst, dstLength);
 }
 
+//Before each 'NOT' operation is completed, the results needs to be reversed to achieve NOT effect.
+//What NOT does is apply OR. And then reverse the entire array.
+//This method is that reversal operation
 int reverse_array_for_not_ending(int *r, int *rs)
 {
-    int *n[DEFAULT_ARRAY_SIZE] = {NULL};
+    int n[DEFAULT_ARRAY_SIZE] = {-1};
     int ns = 0;
     for (int i = 0; i < tags_legth; i++)
     {
@@ -962,7 +946,7 @@ int reverse_array_for_not_ending(int *r, int *rs)
             }
             if (isThere == 0)
             {
-                n[ns++] = tags[i]->id_array[j];
+                n[ns++] = (int) tags[i]->id_array[j];
             }
         }
     }
