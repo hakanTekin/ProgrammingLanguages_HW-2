@@ -6,6 +6,10 @@
     5- AND( expression ) , watch the spaces
 */
 
+/*
+VPL NEEDS THE PROGRAM TO BE READING FROM STDIN change two 'f' s to stin m8
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -156,6 +160,7 @@ int main(int argc, char *argv[])
             printf("UNKNOWN METHOD NAME, first command should always be one of : ADD, TAG, FIND, DISPLAY\nThis program is case sensitive, maybe you mistyped something.\n");
         }
     }
+    free(buffer);
     return 0;
 }
 
@@ -297,12 +302,14 @@ int find(char *linePtr, int *finalArray)
         }
     }
     print_result_array(resultArray, &resultArraySize);
+    
+    free(resultArray);
     return 117;
 }
 
 int sort_ascending_order(int *r, int *rs)
 {
-    int x[9999];
+    int x[DEFAULT_ARRAY_SIZE];
     int xs = *rs;
 
     for (size_t i = 0; i < xs; i++)
@@ -328,6 +335,7 @@ int sort_ascending_order(int *r, int *rs)
         r[i] = x[i];
     }
     *rs = xs;
+
     return -117;
 }
 
@@ -526,6 +534,8 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
     {
         printf(">%d\n is one index found babyyy\n", indexes[i]);
     }
+
+    free(indexes);
 }
 
 int or_helper(char *linePtr, int *resultArray, int *resultArraySize)
@@ -675,6 +685,7 @@ int or_helper(char *linePtr, int *resultArray, int *resultArraySize)
     {
         printf(">%d\n is one index found babyyy\n", indexes[i]);
     }
+    free(indexes);
 }
 
 int not_helper(char *linePtr, int *resultArray, int *resultArraySize)
@@ -825,6 +836,7 @@ int not_helper(char *linePtr, int *resultArray, int *resultArraySize)
     {
         printf(">%d\n is one index found babyyy\n", indexes[i]);
     }
+    free(indexes);
 }
 
 void fix_array(int *dst, int *dstLength)
