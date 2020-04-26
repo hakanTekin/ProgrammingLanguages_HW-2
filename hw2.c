@@ -185,7 +185,16 @@ int add(char *linePtr)
         strcpy(note->note_lines[note->note_line_count++], buffer);
     }
     notes[notes_length++] = note;
-
+    if(tags[0] == NULL){
+        struct tag_struct *temp = malloc(sizeof(struct tag_struct));
+        tags[0] = temp;
+        strcpy(temp->name, " ");
+        temp->id_length = 0;
+        tags_legth++;
+    }
+    //Add new note to tags[0] which holds the untagged data.
+    tags[0]->id_array[tags[0]->id_length] = note->id;
+    tags[0]->id_length++;
     return 0;
 }
 
@@ -216,6 +225,19 @@ int tag(char *tagName, int *indexesToAdd, int indexesCount, struct tag_struct *t
         }
         tags[tags_legth++] = temp;
     }
+
+    for (size_t i = 0; i < tags[0]->id_length; i++)
+    {
+        for (size_t j = 0; j < indexesCount; j++)
+        {
+            if(tags[0]->id_array[i] == indexesToAdd[j]){
+                tags[0]->id_array[i] = -1;
+            }
+        }
+    }
+
+    fix_array(tags[0]->id_array, &tags[0]->id_length);
+    
 }
 
 int display(int id)
