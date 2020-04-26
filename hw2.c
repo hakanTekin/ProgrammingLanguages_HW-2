@@ -78,6 +78,7 @@ int and_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int src
 int or_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcLength, int iter);
 int not_insert_new_indexes_to_result(int *dst, int *src, int *dstLength, int srcLength, int iter);
 int sort_ascending_order(int *r, int *rs);
+int remove_duplicates(int *r, int *rs);
 int print_result_array(int *r, int *rs);
 
 int reverse_array_for_not_ending(int *r, int *rs);
@@ -341,7 +342,7 @@ int sort_ascending_order(int *r, int *rs)
 
 int print_result_array(int *r, int *rs)
 {
-    sort_ascending_order(r, rs);
+    remove_duplicates(r, rs);
     printf("Results:\n");
     for (int i = 0; i < *rs; i++)
     {
@@ -979,4 +980,37 @@ int reverse_array_for_not_ending(int *r, int *rs)
     for (int i = 0; i < ns; i++)
         r[i] = n[i];
     *rs = ns;
+}
+
+int remove_duplicates(int *r, int *rs){
+    sort_ascending_order(r,rs);
+     // Return, if array is empty 
+    // or contains a single element 
+    if (*rs==0 || *rs==1) 
+        return *rs; 
+  
+    int temp[DEFAULT_ARRAY_SIZE]; 
+    int n = *rs;
+    // Start traversing elements 
+    int j = 0; 
+    for (int i=0; i<n-1; i++) 
+  
+        // If current element is not equal 
+        // to next element then store that 
+        // current element 
+        if (r[i] != r[i+1]) 
+            temp[j++] = r[i]; 
+  
+    // Store the last element as whether 
+    // it is unique or repeated, it hasn't 
+    // stored previously 
+    temp[j++] = r[n-1]; 
+  
+    // Modify original array 
+    for (int i=0; i<j; i++) 
+        r[i] = temp[i]; 
+
+    *rs = j;
+  
+    return j; 
 }
