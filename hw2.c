@@ -20,7 +20,7 @@ VPL NEEDS THE PROGRAM TO BE READING FROM STDIN change two 'f' s to stin m8
 #define ADD_TERMINATE_WORD "END"
 
 #define TAG_COMMAND "TAG"
-#define MAX_TAG_NAME_LENGTH 100
+#define MAX_TAG_NAME_LENGTH 101
 #define TAG_TERMINATE_NUMBER -1
 
 #define DISPLAY_COMMAND "DISPLAY"
@@ -33,7 +33,7 @@ VPL NEEDS THE PROGRAM TO BE READING FROM STDIN change two 'f' s to stin m8
 #define NOT_COMMAND "NOT"
 #define NOT_COMMAND_PARANTHESES "NOT("
 
-#define DEFAULT_ARRAY_SIZE 1000
+#define DEFAULT_ARRAY_SIZE 9999
 
 #define EXIT_WORD "exit\n"
 
@@ -407,13 +407,20 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
         }
         else
         {
-            strncpy(curWord, s, f - s);
+            if(f - s < 0){
+                curWord[0] = ')';
+            }else{
+                strncpy(curWord, s, f - s);
+            }
+
             curWord[f - s] = '\0';
         }
 
         if (curWord[0] == ')')
         { //If ) is found. this means the method is done, return to caller.
             linePtr = f;
+             char *pos = strstr(linePtr-1, ")");
+            *pos = '*';
             return 117;
         }
 
@@ -588,13 +595,21 @@ int or_helper(char *linePtr, int *resultArray, int *resultArraySize)
         }
         else
         {
-            strncpy(curWord, s, f - s);
+
+             if(f - s < 0){
+                curWord[0] = ')';
+            }else{
+                strncpy(curWord, s, f - s);
+            }
+
             curWord[f - s] = '\0';
         }
 
         if (curWord[0] == ')')
         { //If ) is found. this means the method is done, return to caller.
             linePtr = f;
+             char *pos = strstr(linePtr-1, ")");
+            *pos = '*';
             return 117;
         }
 
@@ -738,7 +753,12 @@ int not_helper(char *linePtr, int *resultArray, int *resultArraySize)
         }
         else
         {
-            strncpy(curWord, s, f - s);
+             if(f - s < 0){
+                curWord[0] = ')';
+            }else{
+                strncpy(curWord, s, f - s);
+            }
+
             curWord[f - s] = '\0';
         }
 
@@ -746,6 +766,8 @@ int not_helper(char *linePtr, int *resultArray, int *resultArraySize)
         { //If ) is found. this means the method is done, return to caller.
             reverse_array_for_not_ending(resultArray, resultArraySize);
             linePtr = f;
+            char *pos = strstr(linePtr-1, ")");
+            *pos = '*';
             return 117;
         }
 
