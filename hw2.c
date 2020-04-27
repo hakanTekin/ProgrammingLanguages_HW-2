@@ -420,7 +420,10 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
         { //If ) is found. this means the method is done, return to caller.
             linePtr = f;
              char *pos = strstr(linePtr-1, ")");
-            *pos = '*';
+            if(pos == NULL){
+            }else{
+                *pos = '*';
+            }
             return 117;
         }
 
@@ -428,9 +431,8 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
         {
             and_helper(f, indexes, &indexesSize);
 
-            while (f[0] != ')')
-                f++;
-            f += 2;
+           char *newF = strrchr(f, '*');
+            f = (newF+1);
 
             if (currentIteration == 0)
             {
@@ -462,9 +464,8 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
         {
             or_helper(f, indexes, &indexesSize);
             //insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration)
-            while (f[0] != ')')
-                f++;
-            f += 2;
+           char *newF = strrchr(f, '*');
+            f = (newF+1);
 
             if (currentIteration == 0)
             {
@@ -496,9 +497,8 @@ int and_helper(char *linePtr, int *resultArray, int *resultArraySize)
         {
             not_helper(f, indexes, &indexesSize);
             //insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration);
-            while (f[0] != ')')
-                f++;
-            f += 2;
+           char *newF = strrchr(f, '*');
+            f = (newF+1);
 
             if (currentIteration == 0)
             {
@@ -609,7 +609,10 @@ int or_helper(char *linePtr, int *resultArray, int *resultArraySize)
         { //If ) is found. this means the method is done, return to caller.
             linePtr = f;
              char *pos = strstr(linePtr-1, ")");
-            *pos = '*';
+            if(pos == NULL){
+            }else{
+                *pos = '*';
+            }
             return 117;
         }
 
@@ -617,9 +620,8 @@ int or_helper(char *linePtr, int *resultArray, int *resultArraySize)
         {
             and_helper(f, indexes, &indexesSize);
 
-            while (f[0] != ')')
-                f++;
-            f += 2;
+           char *newF = strrchr(f, '*');
+            f = (newF+1);
 
             or_insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration);
             for (size_t i = 0; i < indexesSize; i++)
@@ -632,9 +634,8 @@ int or_helper(char *linePtr, int *resultArray, int *resultArraySize)
             or_helper(f, indexes, &indexesSize);
             //insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration)
 
-            while (f[0] != ')')
-                f++;
-            f += 2;
+           char *newF = strrchr(f, '*');
+            f = (newF+1);
 
             or_insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration);
             for (size_t i = 0; i < indexesSize; i++)
@@ -646,9 +647,8 @@ int or_helper(char *linePtr, int *resultArray, int *resultArraySize)
         {
             not_helper(f, indexes, &indexesSize);
 
-            while (f[0] != ')')
-                f++;
-            f += 2;
+           char *newF = strrchr(f, '*');
+            f = (newF+1);
 
             or_insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration);
             for (size_t i = 0; i < indexesSize; i++)
@@ -767,7 +767,10 @@ int not_helper(char *linePtr, int *resultArray, int *resultArraySize)
             reverse_array_for_not_ending(resultArray, resultArraySize);
             linePtr = f;
             char *pos = strstr(linePtr-1, ")");
-            *pos = '*';
+            if(pos == NULL){
+            }else{
+                *pos = '*';
+            }
             return 117;
         }
 
@@ -775,9 +778,8 @@ int not_helper(char *linePtr, int *resultArray, int *resultArraySize)
         {
             and_helper(f, indexes, &indexesSize);
 
-            while (f[0] != ')')
-                f++;
-            f += 2;
+           char *newF = strrchr(f, '*');
+            f = (newF+1);
 
             not_insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration);
             for (size_t i = 0; i < indexesSize; i++)
@@ -790,9 +792,8 @@ int not_helper(char *linePtr, int *resultArray, int *resultArraySize)
             or_helper(f, indexes, &indexesSize);
             //insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration)
 
-            while (f[0] != ')')
-                f++;
-            f += 2;
+           char *newF = strrchr(f, '*');
+            f = (newF+1);
 
             not_insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration);
             for (size_t i = 0; i < indexesSize; i++)
@@ -804,9 +805,10 @@ int not_helper(char *linePtr, int *resultArray, int *resultArraySize)
         {
             not_helper(f, indexes, &indexesSize);
 
-            while (f[0] != ')')
-                f++;
-            f += 2;
+            //If multiple * has been added, it fails to further the cursor multiple times.
+            char *newF = strrchr(f, '*');
+
+            f = (newF+1);
 
             not_insert_new_indexes_to_result(resultArray, indexes, resultArraySize, indexesSize, currentIteration);
             for (size_t i = 0; i < indexesSize; i++)
