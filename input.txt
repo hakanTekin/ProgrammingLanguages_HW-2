@@ -43,8 +43,12 @@ END
 ADD 15
 ENAH
 END
-TAG a 1 2 3 4 5 -1
-TAG b 6 7 8 9 10 -1
-TAG c 11 12 13 14 15 -1
-TAG d 11 -1
-FIND NOT( NOT( NOT( a AND( a ) NOT( b NOT( c NOT( d ) ) ) ) AND( c OR( a ) ) OR( a b c ) AND( c b ) AND( OR( a ) b NOT( c ) ) ) )
+TAG 1 1 2 3 4 5 -1
+TAG 2 6 7 8 9 10 -1
+TAG 3 11 12 13 14 15 -1
+TAG 4 11 -1
+TAG 5 1 2 3 4 5 -1
+TAG 6 6 7 8 9 -1
+TAG 7 4 10 11 12 -1
+FIND AND( 1 NOT( 2 ) OR( 3 AND( 4 5 ) 6 OR( 7 3 ) 4 ) 7 )
+ 

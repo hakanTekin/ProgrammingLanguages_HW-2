@@ -58,12 +58,6 @@ struct note_struct
     int note_line_count;
 };
 
-struct morse_struct
-{
-    char *morse;
-    char letter;
-};
-
 int add(char *linePtr);
 
 int tag(char *tagName, int *indexesToAdd, int indexesCount, struct tag_struct *tags[]);
@@ -113,7 +107,9 @@ int main(int argc, char *argv[])
         if (strcmp(token, ADD_COMMAND) == 0)
         {
             token = strtok(NULL, " ");
-            int res = add(token);
+            int res = -117;
+            if(token != NULL)
+                res = add(token);
             if (res == -117)
                 printf("Something is wrong, add returned -117\n");
         }
