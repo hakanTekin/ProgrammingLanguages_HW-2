@@ -14,7 +14,7 @@ Will tag notes with given ID's. If the given tag name is not specified, a new ta
 Displays a note with a given ID.
 
 ### FIND
-Finds the notes corresponding to the given query. Find command supports 4 additional commands for different combinations of notes.
+Finds the notes corresponding to the given query. Find command supports 3 additional commands for different combinations of notes.
 
 #### AND
 Finds all notes that has all of the attributes specified.
